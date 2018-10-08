@@ -14,9 +14,11 @@ $ sudo npm install -g npm
 
 ## Bluetooth Adapter firmware
 
-You may have some issues loading the non-free firmware for your Bluetooth 
-adapter. Your internal Bluetooth adapter should also work providing you can 
-install the firmware. This is out of the scope of the provided instructions.
+The onboard Bluetooth adapter for my ThinkPad X1 Carbon 3rd generation worked 
+without any installation of any third-party firmware. You may have some issues 
+loading the non-free firmware for your Bluetooth adapter. Your internal 
+Bluetooth adapter should also work providing you can install the firmware.
+This is out of the scope of the provided instructions.
 
 The following instructions detail the installation of the firmware for the
  [Plugable USB-BT4LE USB Bluetooth 4.0 Low Energy Micro Adapter](https://www.amazon.co.uk/gp/product/B009ZIILLI).
@@ -90,34 +92,46 @@ Success! The software will connect using the address `hci0`.
 
 # Download mahalia-ble-server
 ```
-git clone <address>
+git clone git@git.64studio.net:mahalia/mahalia-ble-server.git
 cd mahalia-ble-server
 npm install
 ```
+
+# Scan for Mahalia systems
+```
+$ sudo nodejs mahalia-ble-server.js <ble_device_name> --disable-wifi
+found Mahalia BLE Peripheral 'Mahalia_BWAXXXXXXXXXXXXX' address: 38:d2:69:dc:ea:da
+<press Ctrl-C to quit>
+```
+Please replace any instance of <ble_device_name> in the following commands with the name found above.
+
 
 # Disable/Enable Wi-Fi support on the Mahalia system
 
 Note this will disable Wi-Fi for the current session as well as every boot.
 
 ```
-$ sudo node mahalia-ble-server.js --disable-wifi
-[BLE] Connected to Mahalia BLE Peripheral 'Mahalia' address: 38:d2:69:dc:ea:da
+$ sudo nodejs mahalia-ble-server.js <ble_device_name> --disable-wifi
+[BLE] Connected to Mahalia BLE Peripheral 'Mahalia_BWAXXXXXXXXXXXXX' address: 38:d2:69:dc:ea:da
 Wi-Fi disabled.
 ```
 
 To enable Wi-Fi support:
 ```
-$ sudo node mahalia-ble-server.js --enable-wifi
-[BLE] Connected to Mahalia BLE Peripheral 'Mahalia' address: 38:d2:69:dc:ea:da
-Wi-Fi disabled.
+$ sudo nodejs mahalia-ble-server.js <ble_device_name> --enable-wifi
+[BLE] Connected to Mahalia BLE Peripheral 'Mahalia_BWAXXXXXXXXXXXXX' address: 38:d2:69:dc:ea:da
+Wi-Fi enabled.
 ```
 
 # Start the BLE Server
 
 ```
-sudo nodejs mahalia-ble-server.js --daemon
+sudo nodejs mahalia-ble-server.js <ble_device_name> --daemon
+[BLE] Connected to Mahalia BLE Peripheral 'Mahalia_BWAXXXXXXXXXXXXX' address: 38:d2:69:dc:ea:da
+...
 ```
 
 Now you may connect via netcat interface on localhost port 33337. The BLE 
 server will translate any commands to the Mahalia system.
 
+Enjoy!

@@ -30,20 +30,32 @@ var bleCharacteristicUUIDs = ['34cd', '56ef'];
 // the maximum amount of bytes to transfer over the BLE interface
 var bleMaxBytes = 100;
 
+// in BLE scan mode or not
+var scanMode = false;
+
 
 function help() {
     console.log('');
     console.log('usage:');
-    console.log('  "nodejs mahalia-ble-server.js --daemon"        starts the openMHA BLE translation daemon');
-    console.log('  "nodejs mahalia-ble-server.js --disable-wifi"  disables Wi-Fi on the Mahalia device');
-    console.log('  "nodejs mahalia-ble-server.js --enable-wifi"   enables Wi-Fi on the Mahalia device');
+    console.log('  "nodejs mahalia-ble-server.js --scan"        scans for openMHA BLE devices');
+    console.log('  "nodejs mahalia-ble-server.js <ble_device_name> --daemon"  starts the openMHA BLE translation daemon, trying to connect to the specified BLE device');
+    console.log('  "nodejs mahalia-ble-server.js <ble_device_name> --disable-wifi"  disables Wi-Fi on the Mahalia device, trying to connect to the specified BLE device');
+    console.log('  "nodejs mahalia-ble-server.js <ble_device_name --enable-wifi"   enables Wi-Fi on the Mahalia device, trying to connect to the specified BLE device');
     process.exit(1);
 }
 
 // read the script arguments
 var args = process.argv.slice(2);
-if (args.length != 1) {
-    console.log('ERROR: no arguments given.');
+if ((args.length == 1 && args[0] == '--scan')) {
+    scanMode = true;
+    console.log('press Ctrl-C to exit scan mode.');
+}
+else if (args.length == 2) {
+    bleLocalName = args[0];
+    console.log('trying to connect to BLE device \'' + bleLocalName + '\'');
+}
+else {
+    console.log('ERROR: incorrect arguments given.');
     help();
 }
 
@@ -70,15 +82,22 @@ noble.on('discover', function(peripheral) {
     var peripheralName = peripheral.advertisement.localName;
     var peripheralAddress = peripheral.address;
 
-    // check if the advertised device name matches the mahalia system
-    if (!peripheralName === bleLocalName) {
+    // handle scanning operation
+    if (scanMode) {
+        console.log('found Mahalia BLE Peripheral \'' + peripheralName +
+            '\' address: ' + peripheralAddress);
+        return;
+    }
+
+    // check if the advertised device name matches the parameter
+    else if (!peripheralName === bleLocalName) {
         console.log('[BLE] ' + peripheralAddress + ' peripheral name not recognised: ' +
             peripheralName + '; skipping');
         return;
     }
 
 
-    // found Mahalia device
+    // found the device
     noble.stopScanning();
     console.log('[BLE] Connected to Mahalia BLE Peripheral \'' + peripheralName +
         '\' address: ' + peripheralAddress);
@@ -98,9 +117,10 @@ noble.on('discover', function(peripheral) {
                 // the characteristics are hardcoded in this order
                 var mhaCharacteristic = characteristics[0];
                 var wifiCharacteristic = characteristics[1];
+                var command = args[1];
 
                 // disable Wi-Fi hotspot then quit
-                if (args[0] === '--disable-wifi') {
+                if (command === '--disable-wifi') {
                     wifiCharacteristic.write(new Buffer('0'), false, function(error) {
                         console.log('Wi-Fi disabled.');
                         process.exit();
@@ -108,7 +128,7 @@ noble.on('discover', function(peripheral) {
                 }
 
                 // enable Wi-Fi hotspot then quit
-                else if (args[0] === '--enable-wifi') {
+                else if (command === '--enable-wifi') {
                     wifiCharacteristic.write(new Buffer('1'), false, function(error) {
                         console.log('Wi-Fi enabled.');
                         process.exit();
@@ -116,7 +136,7 @@ noble.on('discover', function(peripheral) {
                 }
 
                 // run daemon
-                else if (args[0] === '--daemon') {
+                else if (command === '--daemon') {
                     createMHAServer(mhaCharacteristic);
                 }
 
