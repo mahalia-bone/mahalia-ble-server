@@ -14,6 +14,9 @@ $ sudo npm install -g npm
 
 ## Bluetooth Adapter firmware
 
+NOTE: If you are using a USB Bluetooth adapter, please make sure this is not 
+connected to a USB Hub. This will result in dropped packets.
+
 The onboard Bluetooth adapter for my ThinkPad X1 Carbon 3rd generation worked 
 without any installation of any third-party firmware. You may have some issues 
 loading the non-free firmware for your Bluetooth adapter. Your internal 
